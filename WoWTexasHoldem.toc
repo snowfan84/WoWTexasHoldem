@@ -1,0 +1,21 @@
+## Interface: 11302
+## Title : WoW Texas Holdem
+## Author: Snowfan, Gendi, Kraize
+## Notes: Updated for TBC by Snowfan - credit to all previous authors!
+## Notes: Fixed for post addon comms by Gendi
+## Notes: Added German localization (Nachti, Thunderhawk2001 and Frontiii)
+## Notes: Added French localization (Didier and Djobe)
+## Notes: Added Russian localization (Compeccator)
+## Notes: Added Spanish localization (Arxeon, epikuros and Igb)
+## Notes: Forked from AnzacHoldem written by Peter McNeill Timothy Hancock (Thornwind and Density, Ner'zhul) -- thanks guys
+## Version: tbc1.0.2
+## SavedVariables: FHS_ArtWork, FHS_StartChips, FHS_BlindIncrease, FHS_BigBlindStart, FHS_minimapIcon
+Libs\LibStub\LibStub.lua
+Libs\LibSimpleOptions-1.0\lib.xml
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+localization.enUS.lua
+localization.deDE.lua
+localization.frFR.lua
+localization.ruRU.lua
+WoWTexasHoldem.lua
