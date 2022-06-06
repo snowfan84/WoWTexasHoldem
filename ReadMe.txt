@@ -24,14 +24,6 @@ How to play WoW Texas Holdem
 
 
 **************************************************
-Enjoy WoW Texas Holdem and want to show thanks?
-**************************************************
-Here are some ways you can help us:
-1) Put a link from your website to our download page <a href="http://www.freeholdemstrategy.com/texas_holdem_poker_wow_mod.html">WoW Texas Holdem</a>
-2) Tell all your friends about WoW Texas Holdem.
-3) Download and play Texas Holdem at real poker rooms using the links found at http://www.freeholdemstrategy.com
-
-**************************************************
 tbc v1.02 Changes
 **************************************************
 - Snowfan - update to TBC classic API
