@@ -1,11 +1,4 @@
 ------------------------------------------------------------------------
-r90 | gendi | 2019-11-02 19:15:21 +0000 (Sat, 02 Nov 2019) | 1 line
-Changed paths:
-   M /trunk/.pkgmeta
-   M /trunk/WoWTexasHoldem.lua
-   M /trunk/WoWTexasHoldem.toc
-   M /trunk/localization.enUS.lua
-
-Release Classic version
+Release TBC Classic version 1.0.2 -Snowfan 6-6-2022
 ------------------------------------------------------------------------
 
