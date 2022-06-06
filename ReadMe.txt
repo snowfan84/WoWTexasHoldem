@@ -31,6 +31,16 @@ Here are some ways you can help us:
 2) Tell all your friends about WoW Texas Holdem.
 3) Download and play Texas Holdem at real poker rooms using the links found at http://www.freeholdemstrategy.com
 
+**************************************************
+tbc v1.02 Changes
+**************************************************
+- Snowfan - update to TBC classic API
+
+- Add slash commands to show/hide the table
+- Change to NH-appropriate art
+
+- Fix unit portraits for all realms
+- Move autoButtons to button bar
 
 **************************************************
 v3.0 Changes
@@ -62,14 +72,3 @@ v1.20 Changes
 - Added a timer of 30 seconds for the current player -- they get folded and sit out if they don't act in time
 
 - Fixed All in button was appearing when the player still had chips -- premature button text 
-
-**************************************************
-tbc v1.02 Changes
-**************************************************
-- Snowfan - update to TBC classic API
-
-- Add slash commands to show/hide the table
-- Change to NH-appropriate art
-
-- Fix unit portraits for all realms
-- Move autoButtons to button bar
