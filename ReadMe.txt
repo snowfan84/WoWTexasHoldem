@@ -24,7 +24,7 @@ How to play WoW Texas Holdem
 
 
 **************************************************
-tbc v1.02 Changes
+tbc v1.03 Changes
 **************************************************
 - Snowfan - update to TBC classic API
 

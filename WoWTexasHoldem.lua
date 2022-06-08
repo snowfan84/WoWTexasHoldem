@@ -184,6 +184,10 @@
 -- Fix unit portraits for all realms
 -- Move autobuttons to button bar
 
+-- tbc1.0.3
+-- Fix unit portraits for all realms - really
+
+
 local L = MyLocalization;
 
 --http://wiki.github.com/tekkub/libdatabroker-1-1/api
@@ -194,7 +198,7 @@ local UPDATEPERIOD, elapsed = 1, 0
 local FHS_ldbIcon = true;
 
 local FHS_DEBUGING = false;
-local FHS_HOLDEM_version             = "tbc1.0.2";
+local FHS_HOLDEM_version             = "tbc1.0.3";
 local FHS_COMMS_version              = "v8.1.0"; -- only changes now when comms methods change
 local StuffLoaded =0;
 local FHS_DraggingIcon=0;
@@ -408,8 +412,10 @@ local CC=0;
 local BlinkOn = 1;
 
 -- Snowfan edit realm info
-local realmName = GetRealmName()
-	
+local realm = GetRealmName()
+local realmName = "-" .. realm
+
+
 ------------------
 -- Functions --
 ------------------
@@ -1672,7 +1678,7 @@ function FHS_Client_Sit(j, name, chips, bet)
 	--Update about player
 	Seats[j].seated=1
 	--Snowfan edit realm info
-	Seats[j].name=string.gsub(name, "-"..realmName, "")
+	Seats[j].name=string.gsub(name, realmName, "")
 	Seats[j].chips=chips
 	Seats[j].bet=bet
 
