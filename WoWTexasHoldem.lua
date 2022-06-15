@@ -187,6 +187,13 @@
 -- tbc1.0.3
 -- Fix unit portraits for all realms - really
 
+-- tbc1.0.4
+-- Fix unit portraits (for dealer perspective)
+-- Remove realm information from display
+-- Hide your cards when you fold
+-- Change auto- fold option to auto- check/fold
+-- Turn time limit reduced to 30 seconds (from 60)
+
 
 local L = MyLocalization;
 
@@ -198,7 +205,7 @@ local UPDATEPERIOD, elapsed = 1, 0
 local FHS_ldbIcon = true;
 
 local FHS_DEBUGING = false;
-local FHS_HOLDEM_version             = "tbc1.0.3";
+local FHS_HOLDEM_version             = "tbc1.0.4";
 local FHS_COMMS_version              = "v8.1.0"; -- only changes now when comms methods change
 local StuffLoaded =0;
 local FHS_DraggingIcon=0;
@@ -213,7 +220,7 @@ local lasttime=0;
 local timedelta=0;
 local PlayerTurnEndTime=0;
 local RandomSeed=0;
-local AFKTimeLimit=60;
+local AFKTimeLimit=30;
 
 local BigBlindStart=4; -- Starting Big Blind
 local BlindIncrease=0.0; -- % increase of Big Blind per round
@@ -243,8 +250,6 @@ local NeutralCardTexture = "interface\\addons\\WoWTexasHoldem\\textures\\blank_n
 local AllianceCardTexture = "interface\\addons\\WoWTexasHoldem\\textures\\blank_a"
 local HordeCardTexture = "interface\\addons\\WoWTexasHoldem\\textures\\blank_h"
 
---Snowfan edit
-local card_dy=0;
 
 --Single
 
@@ -411,7 +416,6 @@ local CardSpeed=3;
 local CC=0;
 local BlinkOn = 1;
 
--- Snowfan edit realm info
 local realm = GetRealmName()
 local realmName = "-" .. realm
 
@@ -571,7 +575,6 @@ function SeatSlashCommand(msg)
 			FHS_Console_Feedback("::  "..L['Use \'/holdem clients\' to find clients in your guild/party/raid.']);
 			FHS_Console_Feedback("::  "..L['Use \'/holdem options\' for options panel']);
 			
-		--Snowfan edit slash commands
 		elseif ( args[1]=="show") then
 			FHSPokerFrame:Show()
 		elseif ( args[1]=="hide") then	
@@ -635,7 +638,9 @@ end
 --Clear the table of everything
 function FHS_InitializeSeat(j)
 
+--Snowfan edit initialize Seats[j]
 	Seats[j].name="";
+	Seats[j].displayname="";
 	Seats[j].HavePort=0;
 	Seats[j].seated=0;
 	Seats[j].dealt=0;
@@ -901,15 +906,23 @@ function FHS_IconPos(angle)
 end
 
 
+
 function FHS_CheckPlayerTime()
 	if ((GetTime()>PlayerTurnEndTime)and(WhosTurn~=0)) then
-	
-		FHS_SendMessage("forceout_"..WhosTurn,Seats[WhosTurn].name)
+
+		-- Snowfan edit
+		if (WhosTurn==1) then
+			FHS_FoldClick()
+		else
+			FHS_SendMessage("forceout_"..WhosTurn,Seats[WhosTurn].name)
+		end
 
 		PlayerTurnEndTime=GetTime()+(24*60*60*365) -- set the time to next year	
 	end;
 
 end;
+
+
 
 
 function FHS_BlinkWhosTurn()
@@ -978,8 +991,7 @@ function FHS_DrawCard(index)
 	end
 
 	if (card.visible==1) then
-		--Snowfan edit card.Artwork
-		card.Artwork:SetPoint("CENTER", "FHSPokerFrame", "CENTER", dx+29, dy+card_dy)
+		card.Artwork:SetPoint("CENTER", "FHSPokerFrame", "CENTER", dx+29, dy)
 
 		-- Change the layer of the card to OVERLAY if high
 		if (card.high==1) then
@@ -1020,7 +1032,7 @@ function FHS_UpdateSeat(j)
 	else
 		_G[seat]:Show()
 		_G[seat]:SetAlpha(Seats[j].alpha)
-		_G[seat.."_Name"]:SetText(Seats[j].name)
+		_G[seat.."_Name"]:SetText(Seats[j].displayname)
 		_G[seat.."_Chips"]:SetText(L['Chips']..": "..Seats[j].chips)
 		
 		-- Pull Blinds data if we aren't the dealer and we receive info on a bet
@@ -1038,17 +1050,17 @@ function FHS_UpdateSeat(j)
 		local portraitObj = _G[seat.."_Port"]
 		portraitObj:Show()
 		
-		if ( UnitName("player")==Seats[j].name) then --Visible
+		if ( UnitName("player")==Seats[j].displayname) then --Visible
 			SetPortraitTexture(portraitObj,"player");
 			Seats[j].HavePort=1;
 			
-		elseif ( UnitName("target")==Seats[j].name) then --Visible
+		elseif ( UnitName("target")==Seats[j].displayname) then --Visible
 			SetPortraitTexture(portraitObj,"target");
 			Seats[j].HavePort=1;
 			
 		else
 			for n=1,5 do
-				if ( (UnitName("party"..n))==Seats[j].name) then --Visible
+				if ( (UnitName("party"..n))==Seats[j].displayname) then --Visible
 					SetPortraitTexture(portraitObj, "party"..n);
 					Seats[j].HavePort=1;
 					break
@@ -1057,7 +1069,7 @@ function FHS_UpdateSeat(j)
 			
 			if ( UnitInRaid("player") )then
 				for n=1,40 do
-					if ( UnitName("raid"..n)==Seats[j].name) then --Visible
+					if ( UnitName("raid"..n)==Seats[j].displayname) then --Visible
 						SetPortraitTexture(portraitObj, "raid"..n);
 						Seats[j].HavePort=1;
 						break
@@ -1155,10 +1167,16 @@ function FHS_FoldClick()
 			FHS_ShowCard(LocalSeat,"Folded")
 			FHS_Fold:SetText(L['Show Cards'])
 			FHS_Fold:Hide()
+			
+			--Snowfan edit - this will hide our hole cards when we fold
+			FHS_SetCard(Seats[LocalSeat].hole1,DealerX,DealerY, Seats[LocalSeat].x, Seats[LocalSeat].y,0,1,0,0);
+			FHS_SetCard(Seats[LocalSeat].hole2,DealerX,DealerY, Seats[LocalSeat].x-12, Seats[LocalSeat].y+12,0,1,0,0);
+				
 		else
 			FHS_SendMessage("showcards_"..LocalSeat.."_"..RoundCount,DealerName)
 			FHS_Fold:Hide()
 		end
+	
 	else
 		if (Seats[LocalSeat].dealt==1) then		
 			Seats[LocalSeat].status="Folded"
@@ -1170,9 +1188,9 @@ function FHS_FoldClick()
 			FHS_Fold:Hide()
 		end
 	end
+	
 	FHS_UpdateSeat(LocalSeat);
 	
-
 	--its no longer our turn, obviously
 	FHS_HideAllButtons(false)
 
@@ -1348,7 +1366,17 @@ function FHS_UpdateWhosTurn()
 			if ( not FHS_AutoStickyCheck:GetChecked() ) then
 				FHS_AutoFoldCheck:SetChecked(false);
 			end;
-			FHS_FoldClick();
+			
+			--Snowfan edit - auto button should be check/fold instead
+			if (Seats[LocalSeat].bet==HighestBet) then
+				delta=0;
+				Call=0;
+				FHS_CallClick();
+			else
+				FHS_FoldClick();
+			end
+			
+			
 		end;
 
 	else
@@ -1441,7 +1469,8 @@ function FHS_HandleAddonComms(msg, channel, sender)
 		if (tab[3]=="pong!") then
 			FHS_Debug_Feedback("pong!")
 			FHS_SeatPlayer(sender)
-		
+			
+			
 		-- Player telling server he folded
 		elseif (tab[3]=="fold") then
 			FHS_Debug_Feedback("fold")
@@ -1648,7 +1677,7 @@ function FHS_Receive_Quit( sender, j)
 		Seats[j].HavePort=0;
 		if (IsPlaying(sender)==1) then								
 			FHS_UpdateSeat(j);
-			FHS_Console_Feedback(Seats[j].name.." "..L['has left the table.']);
+			FHS_Console_Feedback(Seats[j].displayname.." "..L['has left the table.']);
 		end;
 
 		if (j==LocalSeat) then
@@ -1662,7 +1691,7 @@ function FHS_Receive_Quit( sender, j)
 										
 			--Tell the other seats about the change
 			FHS_BroadCastToTable("q_"..j,j);
-			FHS_Console_Feedback(Seats[j].name.." "..L['has left the table.']);
+			FHS_Console_Feedback(Seats[j].displayname.." "..L['has left the table.']);
 			Seats[j].seated=0;
 			Seats[j].HavePort=0;
 			FHS_UpdateSeat(j);
@@ -1677,13 +1706,13 @@ end
 function FHS_Client_Sit(j, name, chips, bet)
 	--Update about player
 	Seats[j].seated=1
-	--Snowfan edit realm info
-	Seats[j].name=string.gsub(name, realmName, "")
+	Seats[j].name=name
 	Seats[j].chips=chips
 	Seats[j].bet=bet
-
+	Seats[j].displayname=string.gsub(name, realmName, "");
+	
 	FHS_UpdateSeat(j)
-	FHS_Console_Feedback(string.format(L['%s sits %s in Seat %d'],DealerName, Seats[j].name, j))
+	FHS_Console_Feedback(string.format(L['%s sits %s in Seat %d'],DealerName, Seats[j].displayname, j))
 end
 
 
@@ -1952,6 +1981,7 @@ function FHS_StartDealer()
 	Seats[LocalSeat].name=UnitName("player")
 	Seats[LocalSeat].seated=1
 	Seats[LocalSeat].chips=StartChips
+	Seats[LocalSeat].displayname=UnitName("player")
 	FHS_UpdateSeat(LocalSeat)
 	GameLevel=0
 	
@@ -1992,6 +2022,12 @@ function FHS_FoldPlayer(j)
 	Seats[j].forcedbet=0 --player has had their bet
 	Seats[j].alpha=0.5
 	Seats[j].status="Folded"
+	
+	--Snowfan edit - this will hide hole cards when we fold
+	--- Local Graphics
+	FHS_SetCard(Seats[j].hole1,Seats[j].x, Seats[j].y,DealerX,DealerY, 0,1,0,1);
+	FHS_SetCard(Seats[j].hole2,Seats[j].x, Seats[j].y,DealerX,DealerY+12,0,1,0,0);
+	
 	FHS_UpdateSeat(j)
 
 	--if it was their turn when they folded, next turn.
@@ -2122,7 +2158,6 @@ function FHS_DealHoleCards()
 
 			FHS_UpdateSeat(j) -- local view
 			
-
 			if (j==LocalSeat) then
 				-- Local Graphics ------------------------------------------
 				FHS_SetCard(ThisSeat.hole2,DealerX,DealerY, ThisSeat.x-12, ThisSeat.y+12,1,CC*DealerDelay,0,0)
@@ -2141,6 +2176,7 @@ function FHS_DealHoleCards()
 				FHS_BroadCastToTable("deal_"..j,j)
 
 			else
+
 				-- Local Graphics ------------------------------------------
 				FHS_SetCard(BlankCard,DealerX,DealerY, Seats[j].x-12 , Seats[j].y+12,1,CC*DealerDelay,500,0)
 				BlankCard=BlankCard+1
@@ -2156,13 +2192,7 @@ function FHS_DealHoleCards()
 				FHS_SendMessage("hole_"..Seats[j].hole1 .."_"..Seats[j].hole2,Seats[j].name)
 				FHS_BroadCastToTable("deal_"..j,j)
 			end
-			
-			-- if ( Seats[j].chips < Blinds and GameLevel==1) then 
-				-- if player does not have enough for blind then go all in 
-				-- FHS_PlayerAction(j,Seats[j].chips)
-				-- FHS_UpdateSeat(j)
-			-- end
-			
+				
 		else
 			if ( ThisSeat.chips < 1 ) then
 				--they're sitting out due to lack of chips
@@ -2411,7 +2441,7 @@ function FHS_ShowDown()
 		local ThisSeat=Seats[j]
 		ThisSeat.status="Default"
 		FHS_BroadCastToTable("st_"..j.."_"..ThisSeat.chips.."_"..ThisSeat.bet.."_"..ThisSeat.status.."_1")
-		text = ThisSeat.name.." "..L['wins'].."."
+		text = ThisSeat.displayname.." "..L['wins'].."."
 		FHS_BroadCastToTable("showdown_"..j.."_"..text)
 
 		if (j==LocalSeat) then  --dealer won
@@ -2475,7 +2505,7 @@ function FHS_ShowDown()
 			--Go to next side pot.. subtract the what? exactly?
 
 			if (getn(Winners)==1) then
-				text=Seats[ Winners[1] ].name.." "..L['wins']..". "..Seats[Winners[1]].OutText
+				text=Seats[ Winners[1] ].displayname.." "..L['wins']..". "..Seats[Winners[1]].OutText
 			else
 				text=L['Split']..". "..Seats[Winners[1]].OutText
 			end
@@ -2601,12 +2631,17 @@ function FHS_ShowCard(j,status)
 		end;
 
 		--- Local Graphics
+		--Snowfan edit
+		FHS_SetCard(Seats[j].hole2,DealerX,DealerY, Seats[j].x-12, Seats[j].y+12,0,1,0,0);
+		FHS_SetCard(Seats[j].hole1,DealerX,DealerY, Seats[j].x, Seats[j].y,0,1,0,1);
+		
 		FHS_SetCard(Seats[j].hole2,DealerX,DealerY, Seats[j].x-12, Seats[j].y+12,1,1,0,0);
 		FHS_SetCard(Seats[j].hole1,DealerX,DealerY, Seats[j].x, Seats[j].y,1,1,0,1);
 
 		FHS_UpdateSeat(j);
 	end
 end
+
 
 
 function FHS_Shuffle(seed, fake)
@@ -2692,6 +2727,7 @@ function FHS_SeatPlayer(name)
 		Seats[found].name=name;
 		Seats[found].dealt=0;
 		Seats[found].chips=StartChips; --Sit with 500 chips  - eventually will be a dealer option - Is now :D
+		Seats[found].displayname=string.gsub(name, realmName, "");
 	end;
 	
 	FHS_UpdateSeat(found);
@@ -3086,7 +3122,7 @@ function FHS_Popup_BootPlayerClick()
 	else
 		--Tell the other seats about the change
 		FHS_BroadCastToTable("q_"..j,0);
-		FHS_Console_Feedback(Seats[j].name.." "..L['has left the table.']);
+		FHS_Console_Feedback(Seats[j].displayname.." "..L['has left the table.']);
 		Seats[j].seated=0;
 		Seats[j].HavePort=0;
 		FHS_UpdateSeat(j);
@@ -3526,7 +3562,6 @@ function FHS_SetupFrames()
 	FHS_SetupCardFrames();
 	FHS_SetupMiniMapButton();
 	FHS_SetupDealerButtonsFrame();
---	FHS_SetupAutoButtonsFrame();
 end
 
 
@@ -3540,7 +3575,6 @@ function FHS_SetupTableFrame()
 	};
 	local tableFrame = CreateFrame("Frame", "FHSPokerFrame", PARENT_FRAME, BackdropTemplateMixin and "BackdropTemplate");
 	tableFrame:SetBackdrop(tablebackdropInfo)
-
 	tableFrame:Hide();
 	tableFrame:SetMovable(true);
 	tableFrame:EnableMouse();
@@ -3574,7 +3608,6 @@ function FHS_SetupTableFrame()
 	circleTexture:SetTexture("interface\\addons\\WoWTexasHoldem\\textures\\circle");
 	circleTexture:SetTexCoord(0,1,0,1);
 	circleTexture:SetWidth(512);tableFrame:SetHeight(512);
-	--Snowfan edit circle
 	circleTexture:SetPoint("CENTER",tableFrame,"CENTER",0,-50)
 	
 	local versionString = tableFrame:CreateFontString("FHS_Version","BACKGROUND","GameTooltipText");
@@ -3699,7 +3732,6 @@ function FHS_SetupButtonsFrame()
 	};
 	local buttonsFrame = CreateFrame("Frame", "FHS_Buttons", FHSPokerFrame, BackdropTemplateMixin and "BackdropTemplate");
 	buttonsFrame:SetBackdrop(FHSbackdropInfo);
-	--Snowfan edit buttonsFrame
 	buttonsFrame:SetHeight(60);buttonsFrame:SetWidth(380);
 	buttonsFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,-57);
 	buttonsFrame:SetBackdropColor(0,0,0,128);
@@ -3715,40 +3747,36 @@ function FHS_SetupButtonsFrame()
 --	AutoText:SetText(L['Tick to act automatically']);
 --	AutoText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",50,21);	
 	
---Snowfan edit autoFold
 	local AutoFoldText = buttonsFrame:CreateFontString("FHS_AutoFoldText","BACKGROUND","GameTooltipText");
-	AutoFoldText:SetText(L['Fold']);
-	AutoFoldText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",14,10);
+	AutoFoldText:SetText(L['Check/\nFold']);
+	AutoFoldText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",14,8);
 	local AutoFoldCheck = CreateFrame("CheckButton", "FHS_AutoFoldCheck", buttonsFrame, "UICheckButtonTemplate");
 	AutoFoldCheck:SetHeight(15);AutoFoldCheck:SetWidth(15);
-	AutoFoldCheck:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",42,8)
+	AutoFoldCheck:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",40,6)
 	AutoFoldCheck:SetScript("OnClick",function() if ( FHS_AutoFoldCheck:GetChecked() )then FHS_AutoBetCheck:SetChecked(false); FHS_AutoCheckCheck:SetChecked(false); end; end);	
-	
---Snowfan edit autoCheck	
+		
 	local AutoCheckText = buttonsFrame:CreateFontString("FHS_AutoCheckText","BACKGROUND","GameTooltipText");
 	AutoCheckText:SetText(L['Check']);
-	AutoCheckText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",58,10);
+	AutoCheckText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",59,8);
 	local AutoCheckCheck = CreateFrame("CheckButton", "FHS_AutoCheckCheck", buttonsFrame, "UICheckButtonTemplate");
 	AutoCheckCheck:SetHeight(15);AutoCheckCheck:SetWidth(15);
-	AutoCheckCheck:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",96,8)
+	AutoCheckCheck:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",96,6)
 	AutoCheckCheck:SetScript("OnClick",function() if ( FHS_AutoCheckCheck:GetChecked() )then FHS_AutoFoldCheck:SetChecked(false); FHS_AutoBetCheck:SetChecked(false); end; end);	
 	
---Snowfan edit autoCall	
 	local AutoBetText = buttonsFrame:CreateFontString("FHS_AutoBetText","BACKGROUND","GameTooltipText");
 	AutoBetText:SetText(L['Call any']);
-	AutoBetText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",114,10);
+	AutoBetText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",117,8);
 	local AutoBetCheck = CreateFrame("CheckButton", "FHS_AutoBetCheck", buttonsFrame, "UICheckButtonTemplate");
 	AutoBetCheck:SetHeight(15);AutoBetCheck:SetWidth(15);
-	AutoBetCheck:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",164,8)
+	AutoBetCheck:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",166,6)
 	AutoBetCheck:SetScript("OnClick",function() if ( FHS_AutoBetCheck:GetChecked() )then FHS_AutoFoldCheck:SetChecked(false); FHS_AutoCheckCheck:SetChecked(false); end; end);
 	
---Snowfan edit autoSticky	
 	local AutoStickyText = buttonsFrame:CreateFontString("FHS_AutoStickyText","BACKGROUND","GameTooltipText");
 	AutoStickyText:SetText(L['Sticky']);
-	AutoStickyText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",180,10);
+	AutoStickyText:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",185,8);
 	local AutoStickyCheck = CreateFrame("CheckButton", "FHS_AutoStickyCheck", buttonsFrame, "UICheckButtonTemplate");
 	AutoStickyCheck:SetHeight(15);AutoStickyCheck:SetWidth(15);
-	AutoStickyCheck:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",220,8)
+	AutoStickyCheck:SetPoint("BOTTOMLEFT",buttonsFrame,"BOTTOMLEFT",220,6)
 	
 	local callButton = CreateFrame("Button", "FHS_Call", buttonsFrame, "OptionsButtonTemplate");
 	callButton:Hide();
@@ -3756,7 +3784,6 @@ function FHS_SetupButtonsFrame()
 	callButton:SetPoint("CENTER",buttonsFrame,"CENTER",-26,12)
 	callButton:SetScript("OnClick",function()FHS_CallClick();end);
 	
---Snowfan edit allInButton	
 	local allInButton = CreateFrame("Button", "FHS_AllIn", buttonsFrame, "OptionsButtonTemplate");
 	allInButton:Hide();
 	allInButton:SetText(L['All In']);
@@ -3797,10 +3824,8 @@ function FHS_SetupDealerButtonsFrame()
 	};
 	local buttonsFrame = CreateFrame("Frame", "FHS_DealerButtons", FHSPokerFrame, BackdropTemplateMixin and "BackdropTemplate");
 	buttonsFrame:SetBackdrop(dealerbuttonsbackdropInfo)
-
 	buttonsFrame:Hide();
 	buttonsFrame:SetHeight(40);buttonsFrame:SetWidth(300);
-	--Snowfan edit Dealer Buttons
 	buttonsFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,-225);
 	buttonsFrame:SetBackdropColor(0,0,0,128);
 	
@@ -3839,64 +3864,6 @@ function FHS_SetupDealerButtonsFrame()
 end
 
 
-function FHS_SetupAutoButtonsFrame()
-	local autoButtonsbackdropInfo =
-	{ 
-		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", 
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false, tileSize = 16, edgeSize = 16, 
-		insets = { left = 5, right = 5, top = 5, bottom = 5 }
-	};
-	local autoButtonsFrame = CreateFrame("Frame", "FHS_AutoButtons", FHSPokerFrame, BackdropTemplateMixin and "BackdropTemplate");
-	autoButtonsFrame:SetBackdrop(autoButtonsbackdropInfo)
-
-	--Snowfan edit autoButtonsFrame
-	autoButtonsFrame:SetHeight(40);autoButtonsFrame:SetWidth(240);
-	autoButtonsFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,-105);
-	autoButtonsFrame:SetBackdropColor(0,0,0,128);
-	
---	local AutoText = autoButtonsFrame:CreateFontString("FHS_AutoText","BACKGROUND","GameTooltipText");
---	AutoText:SetText(L['Tick to act automatically']);
---	AutoText:SetPoint("TOPLEFT",autoButtonsFrame,"TOPLEFT",20,-6);
-	
---Snowfan edit autoSticky	
---	local AutoStickyText = autoButtonsFrame:CreateFontString("FHS_AutoStickyText","BACKGROUND","GameTooltipText");
---	AutoStickyText:SetText(L['Sticky']);
---	AutoStickyText:SetPoint("TOPLEFT",autoButtonsFrame,"TOPLEFT",180,-6);
---	local AutoStickyCheck = CreateFrame("CheckButton", "FHS_AutoStickyCheck", autoButtonsFrame, "UICheckButtonTemplate");
---	AutoStickyCheck:SetHeight(15);AutoStickyCheck:SetWidth(15);
---	AutoStickyCheck:SetPoint("TOPLEFT",autoButtonsFrame,"TOPLEFT",220,-6)
-
---Snowfan edit autoCall	
---	local AutoBetText = autoButtonsFrame:CreateFontString("FHS_AutoBetText","BACKGROUND","GameTooltipText");
---	AutoBetText:SetText(L['Call any']);
---	AutoBetText:SetPoint("BOTTOMLEFT",autoButtonsFrame,"BOTTOMLEFT",20,6);
---	local AutoBetCheck = CreateFrame("CheckButton", "FHS_AutoBetCheck", autoButtonsFrame, "UICheckButtonTemplate");
---	AutoBetCheck:SetHeight(15);AutoBetCheck:SetWidth(15);
---	AutoBetCheck:SetPoint("BOTTOMLEFT",autoButtonsFrame,"BOTTOMLEFT",70,4)
---	AutoBetCheck:SetScript("OnClick",function() if ( FHS_AutoBetCheck:GetChecked() )then FHS_AutoFoldCheck:SetChecked(false); FHS_AutoCheckCheck:SetChecked(false); end; end);
-	
---Snowfan edit autoFold
---	local AutoFoldText = autoButtonsFrame:CreateFontString("FHS_AutoFoldText","BACKGROUND","GameTooltipText");
---	AutoFoldText:SetText(L['Fold']);
---	AutoFoldText:SetPoint("BOTTOMLEFT",autoButtonsFrame,"BOTTOMLEFT",100,6);
---	local AutoFoldCheck = CreateFrame("CheckButton", "FHS_AutoFoldCheck", autoButtonsFrame, "UICheckButtonTemplate");
---	AutoFoldCheck:SetHeight(15);AutoFoldCheck:SetWidth(15);
---	AutoFoldCheck:SetPoint("BOTTOMLEFT",autoButtonsFrame,"BOTTOMLEFT",130,4)
---	AutoFoldCheck:SetScript("OnClick",function() if ( FHS_AutoFoldCheck:GetChecked() )then FHS_AutoBetCheck:SetChecked(false); FHS_AutoCheckCheck:SetChecked(false); end; end);
-	
---Snowfan edit autoCheck	
---	local AutoCheckText = autoButtonsFrame:CreateFontString("FHS_AutoCheckText","BACKGROUND","GameTooltipText");
---	AutoCheckText:SetText(L['Check']);
---	AutoCheckText:SetPoint("BOTTOMLEFT",autoButtonsFrame,"BOTTOMLEFT",180,6);
---	local AutoCheckCheck = CreateFrame("CheckButton", "FHS_AutoCheckCheck", autoButtonsFrame, "UICheckButtonTemplate");
---	AutoCheckCheck:SetHeight(15);AutoCheckCheck:SetWidth(15);
---	AutoCheckCheck:SetPoint("BOTTOMLEFT",autoButtonsFrame,"BOTTOMLEFT",220,4)
---	AutoCheckCheck:SetScript("OnClick",function() if ( FHS_AutoCheckCheck:GetChecked() )then FHS_AutoFoldCheck:SetChecked(false); FHS_AutoBetCheck:SetChecked(false); end; end);
-
-end
-
-
 function FHS_SetupPopUpFrame()
 	local popupbackdropInfo =
 	{ 
@@ -3907,12 +3874,10 @@ function FHS_SetupPopUpFrame()
 	};
 	local popUpFrame = CreateFrame("Frame", "FHS_Popup", FHSPokerFrame, BackdropTemplateMixin and "BackdropTemplate");
 	popUpFrame:SetBackdrop(popupbackdropInfo);
-
 	popUpFrame:Hide();
 	popUpFrame:SetHeight(100);
 	popUpFrame:SetWidth(130);
 	popUpFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,0);
-
 	popUpFrame:SetBackdropColor(0,0,0,128);
 	
 	local clearChipsbutton = CreateFrame("Button", "FHS_ClearChips", popUpFrame, "OptionsButtonTemplate");
@@ -3944,8 +3909,6 @@ function FHS_SetupPotFrame()
 	};
 	local potFrame = CreateFrame("Frame", "FHS_Pot", FHSPokerFrame, BackdropTemplateMixin and "BackdropTemplate");
 	potFrame:SetBackdrop(potbackdropInfo)
-	
-	--Snowfan edit potFrame
 	potFrame:SetHeight(30);
 	potFrame:SetWidth(360);
 	potFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,140);
@@ -3966,12 +3929,9 @@ function FHS_SetupStatusFrame()
 	};
 	local statusFrame = CreateFrame("Frame", "FHS_Status", FHSPokerFrame, BackdropTemplateMixin and "BackdropTemplate");
 	statusFrame:SetBackdrop(statusbackdropInfo)
-
-	--Snowfan edit statusFrame
 	statusFrame:SetHeight(30);
 	statusFrame:SetWidth(264);
 	statusFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,175);
-
 	statusFrame:SetBackdropColor(0,0,0,128);
 	local statusFrameString = statusFrame:CreateFontString("FHS_Status_Text","BACKGROUND","GameTooltipText");
 	statusFrameString:SetPoint("CENTER",statusFrame,"CENTER",0,2);
@@ -4005,7 +3965,6 @@ function FHS_SetupSeatFrames()
 		};
 		local seatFrame = CreateFrame("Frame", "FHS_Seat_"..seat, FHSPokerFrame, BackdropTemplateMixin and "BackdropTemplate");
 		seatFrame:SetBackdrop(seatbackdropInfo)	
-	
 		seatFrame:EnableMouse();
 		seatFrame:SetHeight(50);
 		seatFrame:SetWidth(120);
