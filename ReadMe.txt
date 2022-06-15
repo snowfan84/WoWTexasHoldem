@@ -22,6 +22,14 @@ How to play WoW Texas Holdem
 2) To start a game type /holdem
 3) To join someone elses started game type /holdem dealer 'playername' (remove the quotes and replace playername with the character's name)
 
+**************************************************
+tbc v1.04 Changes
+**************************************************
+- Fix unit portraits (for dealer perspective)
+- Remove realm information from display
+- Hide your cards when you fold
+- Change auto- fold option to auto- check/fold
+- Turn time limit reduced to 30 seconds (from 60)
 
 **************************************************
 tbc v1.03 Changes
