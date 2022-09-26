@@ -23,6 +23,11 @@ How to play WoW Texas Holdem
 3) To join someone elses started game type /holdem dealer 'playername' (remove the quotes and replace playername with the character's name)
 
 **************************************************
+wrath v3.0.0 Changes
+**************************************************
+- Bump for Wrath
+
+**************************************************
 tbc v1.04 Changes
 **************************************************
 - Fix unit portraits (for dealer perspective)
