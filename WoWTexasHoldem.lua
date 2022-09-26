@@ -194,6 +194,9 @@
 -- Change auto- fold option to auto- check/fold
 -- Turn time limit reduced to 30 seconds (from 60)
 
+-- wrath 3.0.0
+-- Bump for Wrath 
+
 
 local L = MyLocalization;
 
@@ -205,7 +208,7 @@ local UPDATEPERIOD, elapsed = 1, 0
 local FHS_ldbIcon = true;
 
 local FHS_DEBUGING = false;
-local FHS_HOLDEM_version             = "tbc1.0.4";
+local FHS_HOLDEM_version             = "wrath3.0.0";
 local FHS_COMMS_version              = "v8.1.0"; -- only changes now when comms methods change
 local StuffLoaded =0;
 local FHS_DraggingIcon=0;
@@ -449,7 +452,7 @@ function FHSPoker_OnLoad()
     -- Events
     FHSPoker_registerEvents();
 	    
-	FHS_Console_Feedback("::  "..L['WoW Texas Hold\'em'] .." ".. FHS_HOLDEM_version.." "..L['-Snowfan']);
+	FHS_Console_Feedback("::  "..L['WoW Texas Hold\'em'] .." ".. FHS_HOLDEM_version);
 	FHS_Console_Feedback("::  "..L['Use \'/holdem help\' for slash command options'])
 	
 	-- Initialize Seat Rings
@@ -469,7 +472,7 @@ function FHSPoker_OnLoad()
 		PlayerTurnEndTime=GetTime()+(24*60*60*365);
 	end;
 
-	FHS_Version:SetText(L['WoW Texas Hold\'em'].." "..FHS_HOLDEM_version.." "..L['-Snowfan']);
+	FHS_Version:SetText(L['WoW Texas Hold\'em'].." "..FHS_HOLDEM_version);
 	
 	-- Assign all Cards their objects
 	for key, object in pairs(Cards) do 
