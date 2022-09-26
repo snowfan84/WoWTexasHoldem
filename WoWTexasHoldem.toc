@@ -8,7 +8,7 @@
 ## Notes: Added Russian localization (Compeccator)
 ## Notes: Added Spanish localization (Arxeon, epikuros and Igb)
 ## Notes: Forked from AnzacHoldem written by Peter McNeill Timothy Hancock (Thornwind and Density, Ner'zhul) -- thanks guys
-## Version: tbc1.0.3
+## Version: wrath3.0.0
 ## SavedVariables: FHS_ArtWork, FHS_StartChips, FHS_BlindIncrease, FHS_BigBlindStart, FHS_minimapIcon
 Libs\LibStub\LibStub.lua
 Libs\LibSimpleOptions-1.0\lib.xml
