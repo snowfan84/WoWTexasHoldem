@@ -197,6 +197,8 @@
 -- wrath 3.0.0
 -- Bump for Wrath 
 
+-- wrath 3.4.1
+-- Fix SetBackdropColor alpha from (0-255) to (0-1)
 
 local L = MyLocalization;
 
@@ -3737,7 +3739,7 @@ function FHS_SetupButtonsFrame()
 	buttonsFrame:SetBackdrop(FHSbackdropInfo);
 	buttonsFrame:SetHeight(60);buttonsFrame:SetWidth(380);
 	buttonsFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,-57);
-	buttonsFrame:SetBackdropColor(0,0,0,128);
+	buttonsFrame:SetBackdropColor(0,0,0,0.5);
 	
 	local foldButton = CreateFrame("Button", "FHS_Fold", buttonsFrame, "OptionsButtonTemplate");
 	foldButton:Hide();
@@ -3830,7 +3832,7 @@ function FHS_SetupDealerButtonsFrame()
 	buttonsFrame:Hide();
 	buttonsFrame:SetHeight(40);buttonsFrame:SetWidth(300);
 	buttonsFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,-225);
-	buttonsFrame:SetBackdropColor(0,0,0,128);
+	buttonsFrame:SetBackdropColor(0,0,0,0.5);
 	
 	local bigBlindText = buttonsFrame:CreateFontString("FHS_bigBlindText","BACKGROUND","GameTooltipText");
 	bigBlindText:SetText(L['Next Round\'s Big Blind']..": "..('%.0f'):format(FHS_IncrementBlind(Blinds)));
@@ -3881,7 +3883,7 @@ function FHS_SetupPopUpFrame()
 	popUpFrame:SetHeight(100);
 	popUpFrame:SetWidth(130);
 	popUpFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,0);
-	popUpFrame:SetBackdropColor(0,0,0,128);
+	popUpFrame:SetBackdropColor(0,0,0,0.5);
 	
 	local clearChipsbutton = CreateFrame("Button", "FHS_ClearChips", popUpFrame, "OptionsButtonTemplate");
 	clearChipsbutton:SetPoint("CENTER",popUpFrame,"CENTER",0,30)
@@ -3915,7 +3917,7 @@ function FHS_SetupPotFrame()
 	potFrame:SetHeight(30);
 	potFrame:SetWidth(360);
 	potFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,140);
-	potFrame:SetBackdropColor(0,0,0,128);
+	potFrame:SetBackdropColor(0,0,0,0.5);
 	local potFrameString = potFrame:CreateFontString("FHS_Pot_Text","BACKGROUND","GameTooltipText");
 	potFrameString:SetPoint("CENTER",potFrame,"CENTER",0,2);
 
@@ -3935,7 +3937,7 @@ function FHS_SetupStatusFrame()
 	statusFrame:SetHeight(30);
 	statusFrame:SetWidth(264);
 	statusFrame:SetPoint("CENTER",FHSPokerFrame,"CENTER",0,175);
-	statusFrame:SetBackdropColor(0,0,0,128);
+	statusFrame:SetBackdropColor(0,0,0,0.5);
 	local statusFrameString = statusFrame:CreateFontString("FHS_Status_Text","BACKGROUND","GameTooltipText");
 	statusFrameString:SetPoint("CENTER",statusFrame,"CENTER",0,2);
 
@@ -3978,7 +3980,7 @@ function FHS_SetupSeatFrames()
 		tile = false, tileSize = 16, edgeSize = 16, 
 		insets = { left = 5, right = 5, top = 5, bottom = 5 }
 	});
-		seatFrame:SetBackdropColor(0, 0, 0,128);
+		seatFrame:SetBackdropColor(0,0,0,0.5);
 		
 		local seatFrameName = seatFrame:CreateFontString(seatFrame:GetName().."_Name","BACKGROUND","GameTooltipTextSmall");
 		seatFrameName:SetPoint("CENTER",seatFrame,"CENTER",0,13);
